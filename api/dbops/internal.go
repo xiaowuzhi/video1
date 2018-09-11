@@ -5,6 +5,7 @@ import (
     "sync"
     "log"
     "database/sql"
+    _ "github.com/go-sql-driver/mysql"
     "video1/api/defs"
 )
 

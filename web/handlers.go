@@ -12,6 +12,7 @@ import (
     "net/http/httputil"
     "time"
     "strconv"
+    "avenssi"
 )
 
 type HomePage struct {
@@ -92,8 +93,13 @@ func apiHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     defer r.Body.Close()
 }
 
-func proxyHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    u, _ := url.Parse("http://127.0.0.1:9093/")
+func proxyVideoHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    u, _ := url.Parse("http://" + config.GetLbAddr() + ":9093/")
+    proxy := httputil.NewSingleHostReverseProxy(u)
+    proxy.ServeHTTP(w, r)
+}
+func proxyUploadHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+    u, _ := url.Parse("http://" + config.GetLbAddr() + ":9093/")
     proxy := httputil.NewSingleHostReverseProxy(u)
     proxy.ServeHTTP(w, r)
 }

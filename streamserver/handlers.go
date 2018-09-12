@@ -2,14 +2,13 @@ package main
 
 import (
     "io"
-    "os"
     "net/http"
     "html/template"
     "io/ioutil"
-    "time"
     "log"
     "github.com/julienschmidt/httprouter"
     "fmt"
+    "os"
 )
 
 func testPageHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -20,19 +19,24 @@ func testPageHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params
 
 func streamHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
     vid := p.ByName("vid-id")
-    vl := VIDEO_DIR + vid
+    vl1 := "videos/" + vid
+    //vl := VIDEO_DIR + vid
+    //
+    //video, err := os.Open(vl)
+    //if err != nil {
+    //    log.Printf("Error when try to open file: %v", err)
+    //    sendErrorResponse(w, http.StatusInternalServerError, "Internal Error")
+    //    return
+    //}
+    //
+    //w.Header().Set("Content-Type", "video/mp4")
+    //http.ServeContent(w, r, "", time.Now(), video)
+    //
+    //defer video.Close()
 
-    video, err := os.Open(vl)
-    if err != nil {
-        log.Printf("Error when try to open file: %v", err)
-        sendErrorResponse(w, http.StatusInternalServerError, "Internal Error")
-        return
-    }
 
-    w.Header().Set("Content-Type", "video/mp4")
-    http.ServeContent(w, r, "", time.Now(), video)
-
-    defer video.Close()
+    privateAccessURL := XiaoPrivateAccessURL(vl1, 0)
+    http.Redirect(w, r, privateAccessURL, 301)
 }
 
 func uploadHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -64,6 +68,19 @@ func uploadHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) 
         sendErrorResponse(w, http.StatusInternalServerError, "Internal Error")
         return
     }
+
+    ossfn := "videos/" + fn
+    path :=  VIDEO_DIR + fn
+    bn := "avenssi-videos2"
+
+    ret := UploadToOss(ossfn, path, bn)
+
+    if !ret {
+        sendErrorResponse(w, http.StatusInternalServerError, "Internal Error")
+        return
+    }
+
+    os.Remove(path)
 
     w.WriteHeader(http.StatusCreated)
     io.WriteString(w, "Uploaded successfully")

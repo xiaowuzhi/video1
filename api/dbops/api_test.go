@@ -71,8 +71,20 @@ func TestVideoWorkFlow(t *testing.T) {
     t.Run("PrepareUser", testAddUser)
     t.Run("AddVideo", testAddVideoInfo)
     t.Run("GetVideo", testGetVideoInfo)
+    t.Run("ListVideo", testListVideoInfo)
+
     t.Run("DelVideo", testDeleteVideoInfo)
     t.Run("RegetVideo", testRegetVideoInfo)
+
+}
+
+func testListVideoInfo(t *testing.T)  {
+    from := 1514764800
+
+    _, err := ListVideoInfo("avenssi", from, from)
+    if err != nil {
+        t.Errorf("xxxxxxxxxx: %v", err)
+    }
 }
 
 func testAddVideoInfo(t *testing.T) {
@@ -105,10 +117,10 @@ func testRegetVideoInfo(t *testing.T) {
 }
 
 func TestComments(t *testing.T) {
-    clearTables()
-    t.Run("AddUser", testAddUser)
-    t.Run("AddComments", testAddComments)
-    t.Run("ListComments", testListComments)
+   clearTables()
+   t.Run("AddUser", testAddUser)
+   t.Run("AddComments", testAddComments)
+   t.Run("ListComments", testListComments)
 }
 
 func testAddComments(t *testing.T) {

@@ -201,6 +201,7 @@ function initPage(callback) {
                 return;
             }
             var obj = JSON.parse(res);
+            console.log(obj);
             listedVideos = obj['videos'];
             obj['videos'].forEach(function (item, index) {
                 var ele = htmlVideoListElement(item['id'], item['name'], item['display_ctime']);

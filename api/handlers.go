@@ -130,8 +130,8 @@ func ListAllVideos(w http.ResponseWriter, r *http.Request, p httprouter.Params) 
     if !ValidateUser(w, r) {
         return
     }
-
     uname := p.ByName("username")
+
     vs, err := dbops.ListVideoInfo(uname, 0, utils.GetCurrentTimestampSec())
     if err != nil {
         log.Printf("Error in ListAllvideos: %s", err)

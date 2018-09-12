@@ -4,7 +4,6 @@ import (
     "net/http"
     "video1/api/session"
     "video1/api/defs"
-    "fmt"
 )
 
 var HEADER_FIELD_SESSION = "X-Session-Id"
@@ -15,15 +14,12 @@ func validateUserSession(r *http.Request) bool {
     if len(sid) == 0 {
         return false
     }
-
     uname, ok := session.IsSessionExpired(sid)
-    fmt.Println(uname)
     if ok {
         return false
     }
 
     r.Header.Add(HEADER_FIELD_UNAME, uname)
-    fmt.Println(r.Header)
 
     return true
 }

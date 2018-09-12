@@ -78,12 +78,15 @@ func AddNewVideo(aid int, name string) (*defs.VideoInfo, error) {
     }
     t := time.Now()
     ctime := t.Format("Jan 02 2006, 15:04:05")
+
+    c_time := t.Format("2006-01-02 15:04:05")
+
     stmtIns, err := dbConn.Prepare(`INSERT INTO video_info
-		(id, author_id, name, display_ctime) VALUES(?,?,?,?)`)
+		(id, author_id, name, display_ctime, create_time) VALUES(?,?,?,?,?)`)
     if err != nil {
         return nil, err
     }
-    _, err = stmtIns.Exec(vid, aid, name, ctime)
+    _, err = stmtIns.Exec(vid, aid, name, ctime, c_time)
     if err != nil {
         return nil, err
     }
@@ -114,10 +117,11 @@ func GetVideoInfo(vid string) (*defs.VideoInfo, error) {
 }
 
 func ListVideoInfo(uname string, from, to int) ([]*defs.VideoInfo, error) {
+
     stmtOut, err := dbConn.Prepare(`SELECT video_info.id, video_info.author_id, video_info.name, video_info.display_ctime FROM video_info
 		INNER JOIN users ON video_info.author_id = users.id
 		WHERE users.login_name=? AND video_info.create_time > FROM_UNIXTIME(?) AND video_info.create_time<=FROM_UNIXTIME(?)
-		OREDER BY video_info.create_time DESC`)
+		ORDER BY video_info.create_time DESC`)
     var res []*defs.VideoInfo
     if err != nil {
         return res, err
@@ -159,11 +163,14 @@ func AddNewComments(vid string, aid int, content string) error {
     if err != nil {
         return err
     }
-    stmtIns, err := dbConn.Prepare("INSERT INTO comments(id, video_id, author_id, content) values(?,?,?,?)")
+    t := time.Now()
+    c_time := t.Format("2006-01-02 15:04:05")
+
+    stmtIns, err := dbConn.Prepare("INSERT INTO comments(id, video_id, author_id, content, time) values(?,?,?,?,?)")
     if err != nil {
         return err
     }
-    _, err = stmtIns.Exec(id, vid, aid, content)
+    _, err = stmtIns.Exec(id, vid, aid, content, c_time)
     if err != nil {
         return err
     }
@@ -175,7 +182,7 @@ func ListComments(vid string, from, to int) ([]*defs.Comment, error) {
     stmtOut, err := dbConn.Prepare(`SELECT comments.id, users.Login_name, comments.content FROM comments 
 		INNER JOIN users ON comments.author_id = users.id
 		WHERE comments.video_id = ? AND comments.time >  FROM_UNIXTIME(?) AND comments.time<=FROM_UNIXTIME(?)
-		OREDER BY comments.time DESC`)
+		ORDER BY comments.time DESC`)
     var res []*defs.Comment
 
     rows, err := stmtOut.Query(vid, from, to)

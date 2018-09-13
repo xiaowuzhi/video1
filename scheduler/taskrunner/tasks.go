@@ -6,6 +6,7 @@ import (
     "sync"
     "video1/scheduler/dbops"
     "video1/scheduler/ossops"
+    "time"
 )
 
 func deleteVideo(vid string) error {
@@ -29,7 +30,7 @@ func deleteVideo(vid string) error {
 }
 
 func VideoClearDispatcher(dc dataChan) error {
-    res, err := dbops.ReadVideoDeletionRecord(3)
+    res, err := dbops.ReadVideoDeletionRecord(5000)
     if err != nil {
         log.Printf("Video clear dispatcher error: %v", err)
         return err
@@ -65,17 +66,22 @@ forloop:
                 }
             }(vid)
         default:
+            time.Sleep(1 * time.Second)
             break forloop
         }
     }
 
     errMap.Range(func(k, v interface{}) bool {
         err = v.(error)
-        if err != nil {
+
+        if err.Error() == "Deleting video error" {
+            log.Printf("errMap Deleting video error id=%v",k)
+            dbops.DelVideoDeletionRecord(k.(string))
+        }else {
             return false
         }
+
         return true
     })
-
     return err
 }

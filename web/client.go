@@ -9,7 +9,6 @@ import (
     "encoding/json"
     "net/url"
     "avenssi/config"
-    "fmt"
 )
 
 var httpClient *http.Client
@@ -46,8 +45,7 @@ func request(b *ApiBody, w http.ResponseWriter, r *http.Request) {
         }
         normalResponse(w, resp)
     case http.MethodDelete:
-        fmt.Println("11111111111111111")
-        req, _ := http.NewRequest("Delete", newUrl, nil)
+        req, _ := http.NewRequest("DELETE", newUrl, nil)
         req.Header = r.Header
         resp, err = httpClient.Do(req)
         if err != nil {

@@ -7,6 +7,9 @@ import (
     "io"
     "io/ioutil"
     "encoding/json"
+    "net/url"
+    "avenssi/config"
+    "fmt"
 )
 
 var httpClient *http.Client
@@ -19,9 +22,13 @@ func request(b *ApiBody, w http.ResponseWriter, r *http.Request) {
     var resp *http.Response
     var err error
 
+    u, _ := url.Parse(b.Url)
+    u.Host = config.GetLbAddr() + ":" + u.Port()
+    newUrl := u.String()
+
     switch b.Method {
     case http.MethodGet:
-        req, _ := http.NewRequest("GET", b.Url, nil)
+        req, _ := http.NewRequest("GET", newUrl, nil)
         req.Header = r.Header
         resp, err = httpClient.Do(req)
         if err != nil {
@@ -30,7 +37,7 @@ func request(b *ApiBody, w http.ResponseWriter, r *http.Request) {
         }
         normalResponse(w, resp)
     case http.MethodPost:
-        req, _ := http.NewRequest("POST", b.Url, bytes.NewBuffer([]byte(b.ReqBody)))
+        req, _ := http.NewRequest("POST", newUrl, bytes.NewBuffer([]byte(b.ReqBody)))
         req.Header = r.Header
         resp, err = httpClient.Do(req)
         if err != nil {
@@ -39,7 +46,8 @@ func request(b *ApiBody, w http.ResponseWriter, r *http.Request) {
         }
         normalResponse(w, resp)
     case http.MethodDelete:
-        req, _ := http.NewRequest("Delete", b.Url, nil)
+        fmt.Println("11111111111111111")
+        req, _ := http.NewRequest("Delete", newUrl, nil)
         req.Header = r.Header
         resp, err = httpClient.Do(req)
         if err != nil {

@@ -10,6 +10,7 @@ import (
     "video1/api/session"
     "log"
     "video1/api/utils"
+    "fmt"
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -149,9 +150,9 @@ func ListAllVideos(w http.ResponseWriter, r *http.Request, p httprouter.Params) 
 }
 
 func DeleteVideo(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-    if !ValidateUser(w, r) {
-        return
-    }
+    //if !ValidateUser(w, r) {
+    //    return
+    //}
 
     vid := p.ByName("vid-id")
     err := dbops.DeleteVideoInfo(vid)
@@ -160,6 +161,8 @@ func DeleteVideo(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
         sendErrorResponse(w, defs.ErrorDBError)
         return
     }
+
+    fmt.Println("-------------", vid)
 
     go utils.SendDeleteVideoRequest(vid)
     sendNormalResponse(w, "", 204)

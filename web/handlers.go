@@ -12,7 +12,7 @@ import (
     "net/http/httputil"
     "time"
     "strconv"
-    "avenssi"
+    "avenssi/config"
 )
 
 type HomePage struct {

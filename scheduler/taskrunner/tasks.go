@@ -1,19 +1,28 @@
 package taskrunner
 
 import (
-    "os"
     "errors"
     "log"
     "sync"
     "video1/scheduler/dbops"
+    "video1/scheduler/ossops"
 )
 
 func deleteVideo(vid string) error {
-    err := os.Remove(VIDEO_PATH + vid)
+    //err := os.Remove(VIDEO_PATH + vid)
+    //
+    //if err != nil && !os.IsNotExist(err) {
+    //    log.Printf("Deleting video error: %v", err)
+    //    return err
+    //}
 
-    if err != nil && !os.IsNotExist(err) {
-        log.Printf("Deleting video error: %v", err)
-        return err
+    ossfn := "videos/" + vid
+    bn := "avenssi-videos2"
+    ok := ossops.DeleteObject(ossfn, bn)
+
+    if !ok {
+        log.Printf("Deleting video error, oss operation faile")
+        return errors.New("Deleting video error")
     }
 
     return nil

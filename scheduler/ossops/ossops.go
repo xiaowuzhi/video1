@@ -1,4 +1,4 @@
-package main
+package ossops
 
 import (
     "github.com/qiniu/api.v7/auth/qbox"
@@ -13,6 +13,7 @@ var AK string
 var SK string
 var DOMAIN string
 var EP string
+
 func init() {
     AK = "1XiP12dWrUkeTzJAKW-tdQ7iBbxHXtwcQyIssV34"
     SK = "zpxjHfl5GeOoZhCliMEEsia4mjUeXqImZlYfIghK"
@@ -58,5 +59,25 @@ func XiaoPrivateAccessURL(key string, deadline int64) (privateURL string) {
     }
     privateURL = storage.MakePrivateURL(mac, DOMAIN, key, deadline)
     return
+}
+
+func DeleteObject(filename string, bn string) bool {
+
+    mac := qbox.NewMac(AK, SK)
+    cfg := storage.Config{
+        // 是否使用https域名进行资源管理
+        UseHTTPS: false,
+    }
+    // 指定空间所在的区域，如果不指定将自动探测
+    // 如果没有特殊需求，默认不需要指定
+    //cfg.Zone=&storage.ZoneHuabei
+    bucketManager := storage.NewBucketManager(mac, &cfg)
+    err := bucketManager.Delete(bn, filename)
+    if err != nil {
+        log.Printf("Deleting object error: %s", err)
+        return false
+    }
+
+    return true
 
 }

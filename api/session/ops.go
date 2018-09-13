@@ -39,7 +39,7 @@ func LoadSessionsFromDB() *sync.Map {
 
 func GenerateNewSessionId(un string) string {
     id, _ := utils.NewUUID()
-    ct := time.Now().UnixNano() / 1000000
+    ct := nowInMilli()
     ttl := ct + 30*60*1000
     ss := &defs.SimpleSession{Username: un, TTL: ttl}
     sessionMap.Store(id, ss)
@@ -52,6 +52,8 @@ func GenerateNewSessionId(un string) string {
 
 func IsSessionExpired(sid string) (string, bool) {
     ss, ok := sessionMap.Load(sid)
+    ct := nowInMilli()
+
     if ok {
         ct := nowInMilli()
         if ss.(*defs.SimpleSession).TTL < ct {
@@ -59,6 +61,20 @@ func IsSessionExpired(sid string) (string, bool) {
             return "", true
         }
         return ss.(*defs.SimpleSession).Username, false
+    } else {
+        ss, err := dbops.RetrieveSession(sid)
+        if err != nil || ss == nil {
+            return "", true
+        }
+
+        if ss.TTL < ct {
+            deleteExpiredSession(sid)
+            return "", true
+        }
+
+        sessionMap.Store(sid, ss)
+        return ss.Username, false
+
     }
     return "", true
 }

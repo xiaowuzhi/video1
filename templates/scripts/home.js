@@ -187,7 +187,9 @@ $(document).ready(function () {
 function initPage(callback) {
     getUserId(function (res, err) {
         if (err != null) {
-            window.alert("Encountered error when loading user id");
+            //window.alert("Encountered error when loading user id");
+            popupErrorMsg('Encountered error when loading user id');
+
             return;
         }
 
@@ -201,7 +203,7 @@ function initPage(callback) {
                 return;
             }
             var obj = JSON.parse(res);
-            console.log(obj);
+            //console.log(obj);
             listedVideos = obj['videos'];
             obj['videos'].forEach(function (item, index) {
                 var ele = htmlVideoListElement(item['id'], item['name'], item['display_ctime']);

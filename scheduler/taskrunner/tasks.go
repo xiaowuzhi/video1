@@ -5,27 +5,26 @@ import (
     "log"
     "sync"
     "video1/scheduler/dbops"
-    "video1/scheduler/ossops"
     "time"
     "os"
 )
 
 func deleteVideo(vid string) error {
-    //err := os.Remove(VIDEO_PATH + vid)
-    //
-    //if err != nil && !os.IsNotExist(err) {
-    //    log.Printf("Deleting video error: %v", err)
-    //    return err
-    //}
+    err := os.Remove(VIDEO_PATH + vid)
 
-    ossfn := "videos/" + vid
-    bn := "avenssi-videos2"
-    ok := ossops.DeleteObject(ossfn, bn)
-
-    if !ok {
+    if err != nil && !os.IsNotExist(err) {
         log.Printf("Deleting video error, oss operation faile")
         return errors.New("Deleting video error")
     }
+
+    //ossfn := "videos/" + vid
+    //bn := "avenssi-videos2"
+    //ok := ossops.DeleteObject(ossfn, bn)
+    //
+    //if !ok {
+    //    log.Printf("Deleting video error, oss operation faile")
+    //    return errors.New("Deleting video error")
+    //}
 
     return nil
 }

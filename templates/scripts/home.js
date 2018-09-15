@@ -49,7 +49,8 @@ $(document).ready(function () {
 
         $(".del-video-button").click(function () {
             var _JQthis = $(this)
-            var id = _JQthis.attr("id")
+            var id = _JQthis.attr("id").substring(4);
+
             var str11 = _JQthis.siblings("a").find("div").eq(0).html();
             var str22 = $("<div><span>" + str11 + "</span></div>")
             str22.find("span").css({"color":"red","font-size":"200%"})
@@ -80,6 +81,17 @@ $(document).ready(function () {
                         btnClass: 'btn-primary'
                     }
                 }
+            });
+
+            deleteVideo(id, function (res, err) {
+                if (err !== null) {
+                    //window.alert("encounter an error when try to delete video: " + id);
+                    popupErrorMsg("encounter an error when try to delete video: " + id);
+                    return;
+                }
+
+                popupNotificationMsg("Successfully deleted video: " + id)
+                location.reload();
             });
 
 

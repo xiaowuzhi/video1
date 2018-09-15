@@ -22,7 +22,11 @@ func RegisterHandlers() *httprouter.Router {
 
     router.GET("/videos/:vid-id", streamHandler)
 
+    router.GET("/videos1/:vid-id", streamHandler1)
+
     router.POST("/upload/:vid-id", uploadHandler)
+    router.POST("/upload1/:vid-id", uploadHandlerqinui)
+    router.POST("/upload_qinui/:vid-id", uploadHandlerqinui)
 
     router.GET("/testpage", testPageHandler)
 
@@ -41,6 +45,6 @@ func (m middleWareHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
     r := RegisterHandlers()
-    mh := NewMiddleWareHandler(r, 10000)
+    mh := NewMiddleWareHandler(r, 3000)
     http.ListenAndServe(":9093", mh)
 }

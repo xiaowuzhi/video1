@@ -10,3 +10,5 @@ cd bin
 #nohup ./scheduler &
 #nohup ./streamserver &
 #nohup ./web &
+
+#echo "deploy finished"

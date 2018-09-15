@@ -109,8 +109,15 @@ func AddNewVideo(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
         sendErrorResponse(w, defs.ErrorRequestBodyParseFailed)
         return
     }
+    var vi *defs.VideoInfo
+    var err error
+    if nvbody.IsSee == 0 {
+        vi, err = dbops.AddNewVideo(nvbody.AuthorId, nvbody.Name)
 
-    vi, err := dbops.AddNewVideo(nvbody.AuthorId, nvbody.Name)
+    }else {
+        vi, err = dbops.AddNewVideoQinui(nvbody.AuthorId, nvbody.Name)
+    }
+
     log.Printf("Author id : %d, name: %s \n", nvbody.AuthorId, nvbody.Name)
     if err != nil {
         log.Printf("Error in AddNewVideo: %s", err)

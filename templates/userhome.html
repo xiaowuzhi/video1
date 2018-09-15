@@ -243,6 +243,8 @@
             integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
             crossorigin="anonymous">
     </script>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
     <script type="text/javascript" src="/statics/scripts/home.js"></script>
 </head>
 <body id="main-back">
@@ -295,6 +297,11 @@
                   enctype="multipart/form-data" class="uploadForm">
                 <input class="uploadForm__input" type="file" name="file" id="inputFile" accept="video/*">
                 <input type="text" id="vname" name="video name">
+
+                <select name="is_see" id="is_see">
+                    <option value=0 selected="selected">本地</option>
+                    <option value=1>七牛云</option>
+                </select>
                 <input type="submit" id="upload-submit" name="submit" value="Submit">
             </form>
         </div>

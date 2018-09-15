@@ -13,6 +13,7 @@ var AK string
 var SK string
 var DOMAIN string
 var EP string
+
 func init() {
     AK = "1XiP12dWrUkeTzJAKW-tdQ7iBbxHXtwcQyIssV34"
     SK = "zpxjHfl5GeOoZhCliMEEsia4mjUeXqImZlYfIghK"
@@ -59,4 +60,33 @@ func XiaoPrivateAccessURL(key string, deadline int64) (privateURL string) {
     privateURL = storage.MakePrivateURL(mac, DOMAIN, key, deadline)
     return
 
+}
+
+func UploadToOssbig(filename string, path string, bn string) bool {
+
+    putPolicy := storage.PutPolicy{
+        Scope: bn,
+    }
+    mac := qbox.NewMac(AK, SK)
+    upToken := putPolicy.UploadToken(mac)
+    cfg := storage.Config{}
+    // 空间对应的机房
+    cfg.Zone = &storage.ZoneHuabei
+    // 是否使用https域名
+    cfg.UseHTTPS = false
+    // 上传是否使用CDN上传加速
+    cfg.UseCdnDomains = false
+    // 构建表单上传的对象
+    resumeUploader := storage.NewResumeUploader(&cfg)
+    ret := storage.PutRet{}
+    // 可选配置
+    putExtra := storage.RputExtra{
+
+    }
+    err := resumeUploader.PutFile(context.Background(), &ret, upToken, filename, path, &putExtra)
+    if err != nil {
+        log.Printf("Uploading object error big: %s", err)
+        return false
+    }
+    return true
 }

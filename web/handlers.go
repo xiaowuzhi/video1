@@ -13,6 +13,7 @@ import (
     "time"
     "strconv"
     "avenssi/config"
+    "fmt"
 )
 
 type HomePage struct {
@@ -94,12 +95,41 @@ func apiHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func proxyVideoHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    u, _ := url.Parse("http://" + config.GetLbAddr() + ":9093/")
-    proxy := httputil.NewSingleHostReverseProxy(u)
-    proxy.ServeHTTP(w, r)
+    p := new(Proxy)
+    //host := "www.google.com" // WORKS AS EXPECTED
+    host := config.GetLbAddr() // GIVES AN ERROR
+    u, err := url.Parse(fmt.Sprintf("http://%v:9093/", host))
+    if err != nil {
+        log.Printf("Error parsing URL")
+    }
+    p.proxy = httputil.NewSingleHostReverseProxy(u)
+    p.proxy.ServeHTTP(w, r)
 }
+//func proxyUploadHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+//    u, _ := url.Parse("http://" + config.GetLbAddr() + ":9093/")
+//    proxy := httputil.NewSingleHostReverseProxy(u)
+//    proxy.ServeHTTP(w, r)
+//}
+
+
+
+
 func proxyUploadHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    u, _ := url.Parse("http://" + config.GetLbAddr() + ":9093/")
-    proxy := httputil.NewSingleHostReverseProxy(u)
-    proxy.ServeHTTP(w, r)
+    p := new(Proxy)
+    //host := "www.google.com" // WORKS AS EXPECTED
+    host := config.GetLbAddr() // GIVES AN ERROR
+    u, err := url.Parse(fmt.Sprintf("http://%v:9093/", host))
+    if err != nil {
+        log.Printf("Error parsing URL")
+    }
+    p.proxy = httputil.NewSingleHostReverseProxy(u)
+    p.proxy.ServeHTTP(w, r)
+}
+
+type Proxy struct {
+    proxy *httputil.ReverseProxy
+}
+
+func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    p.proxy.ServeHTTP(w, r)
 }

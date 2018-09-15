@@ -95,8 +95,33 @@ func AddNewVideo(aid int, name string) (*defs.VideoInfo, error) {
     return res, nil
 }
 
+func AddNewVideoQinui(aid int, name string) (*defs.VideoInfo, error) {
+    //create uuid
+    vid, err := utils.NewUUID()
+    if err != nil {
+        return nil, err
+    }
+    t := time.Now()
+    ctime := t.Format("Jan 02 2006, 15:04:05")
+
+    c_time := t.Format("2006-01-02 15:04:05")
+
+    stmtIns, err := dbConn.Prepare(`INSERT INTO video_info
+		(id, author_id, name, display_ctime, create_time, is_see) VALUES(?,?,?,?,?,?)`)
+    if err != nil {
+        return nil, err
+    }
+    _, err = stmtIns.Exec(vid, aid, name, ctime, c_time, 1)
+    if err != nil {
+        return nil, err
+    }
+    res := &defs.VideoInfo{Id: vid, AuthorId: aid, Name: name, DisplayCtime: ctime}
+    defer stmtIns.Close()
+    return res, nil
+}
+
 func GetVideoInfo(vid string) (*defs.VideoInfo, error) {
-    stmtOut, err := dbConn.Prepare(`SELECT author_id, name, display_ctime FROM video_info 
+    stmtOut, err := dbConn.Prepare(`SELECT author_id, name, display_ctime, is_see FROM video_info 
 		WHERE id=?`)
     if err != nil {
         return nil, err
@@ -104,7 +129,8 @@ func GetVideoInfo(vid string) (*defs.VideoInfo, error) {
     var aid int
     var dct string
     var name string
-    err = stmtOut.QueryRow(vid).Scan(&aid, &name, &dct)
+    var is_see int
+    err = stmtOut.QueryRow(vid).Scan(&aid, &name, &dct, &is_see)
     if err != nil && err != sql.ErrNoRows {
         return nil, err
     }
@@ -112,13 +138,13 @@ func GetVideoInfo(vid string) (*defs.VideoInfo, error) {
         return nil, nil
     }
     defer stmtOut.Close()
-    res := &defs.VideoInfo{Id: vid, AuthorId: aid, Name: name, DisplayCtime: dct}
+    res := &defs.VideoInfo{Id: vid, AuthorId: aid, Name: name, DisplayCtime: dct, IsSee: is_see}
     return res, nil
 }
 
 func ListVideoInfo(uname string, from, to int) ([]*defs.VideoInfo, error) {
 
-    stmtOut, err := dbConn.Prepare(`SELECT video_info.id, video_info.author_id, video_info.name, video_info.display_ctime FROM video_info
+    stmtOut, err := dbConn.Prepare(`SELECT video_info.id, video_info.author_id, video_info.name, video_info.display_ctime, video_info.is_see FROM video_info
 		INNER JOIN users ON video_info.author_id = users.id
 		WHERE users.login_name=? AND video_info.create_time > FROM_UNIXTIME(?) AND video_info.create_time<=FROM_UNIXTIME(?)
 		ORDER BY video_info.create_time DESC`)
@@ -135,10 +161,11 @@ func ListVideoInfo(uname string, from, to int) ([]*defs.VideoInfo, error) {
     for rows.Next() {
         var id, name, ctime string
         var aid int
-        if err := rows.Scan(&id, &aid, &name, &ctime); err != nil {
+        var is_see int
+        if err := rows.Scan(&id, &aid, &name, &ctime, &is_see); err != nil {
             return res, err
         }
-        vi := &defs.VideoInfo{Id: id, AuthorId: aid, Name: name, DisplayCtime: ctime}
+        vi := &defs.VideoInfo{Id: id, AuthorId: aid, Name: name, DisplayCtime: ctime, IsSee: is_see}
         res = append(res, vi)
     }
     defer stmtOut.Close()

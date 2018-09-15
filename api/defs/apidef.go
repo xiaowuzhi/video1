@@ -14,6 +14,7 @@ type NewComment struct {
 type NewVideo struct {
     AuthorId int    `json:"author_id"`
     Name     string `json:"name"`
+    IsSee int `json:"is_see"`
 }
 
 //response
@@ -56,6 +57,7 @@ type VideoInfo struct {
     AuthorId     int    `json:"author_id"`
     Name         string `json:"name"`
     DisplayCtime string `json:"display_ctime"`
+    IsSee int `json:"is_see"`
 }
 
 type Comment struct {

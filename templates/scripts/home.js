@@ -19,33 +19,72 @@ $(document).ready(function () {
     initPage(function () {
         if (listedVideos !== null) {
             currentVideo = listedVideos[0];
-            selectVideo(listedVideos[0]['id']);
+            if(listedVideos[0]['is_see']){
+                selectVideoQinui(listedVideos[0]['id']);
+
+            }else{
+                selectVideo(listedVideos[0]['id']);
+            }
         }
 
         $(".video-item").click(function () {
             var self = this.id
+            var self_is_see = this.is_see
             listedVideos.forEach(function (item, index) {
                 if (item['id'] === self) {
                     currentVideo = item;
+                    self_is_see = item['is_see']
                     return
                 }
             });
 
-            selectVideo(self);
+
+            if(self_is_see){
+                selectVideoQinui(self);
+            }else{
+                selectVideo(self);
+            }
+
         });
 
         $(".del-video-button").click(function () {
-            var id = this.id.substring(4);
-            deleteVideo(id, function (res, err) {
-                if (err !== null) {
-                    //window.alert("encounter an error when try to delete video: " + id);
-                    popupErrorMsg("encounter an error when try to delete video: " + id);
-                    return;
-                }
+            var _JQthis = $(this)
+            var id = _JQthis.attr("id")
+            var str11 = _JQthis.siblings("a").find("div").eq(0).html();
+            var str22 = $("<div><span>" + str11 + "</span></div>")
+            str22.find("span").css({"color":"red","font-size":"200%"})
+            $.confirm({
+                title: '确认',
+                content: '确认要删除 '+ str22.html() +' 视频? ' ,
+                type: 'green',
+                icon: 'glyphicon glyphicon-question-sign',
+                buttons: {
+                    ok: {
+                        text: '确认',
+                        btnClass: 'btn-primary',
+                        action: function() {
+                            deleteVideo(id, function (res, err) {
+                                if (err !== null) {
+                                    //window.alert("encounter an error when try to delete video: " + id);
+                                    popupErrorMsg("encounter an error when try to delete video: " + id);
+                                    return;
+                                }
 
-                popupNotificationMsg("Successfully deleted video: " + id)
-                location.reload();
+                                popupNotificationMsg("Successfully deleted video: " + id)
+                                location.reload();
+                            });
+                        }
+                    },
+                    cancel: {
+                        text: '取消',
+                        btnClass: 'btn-primary'
+                    }
+                }
             });
+
+
+
+
         });
 
         $("#submit-comment").on('click', function () {
@@ -123,8 +162,17 @@ $(document).ready(function () {
     $("#uploadform").on('submit', function (e) {
         e.preventDefault()
         var vname = $('#vname').val();
+        var is_see = $('#is_see').val();
 
-        createVideo(vname, function (res, err) {
+        $("#upload-submit").val("正在处理...");
+        $("#upload-submit").attr("disabled", "disabled");
+
+
+        if(!vname){
+            vname = "v_" + Math.floor(Math.random()*1000000);
+        }
+
+        createVideo(vname, is_see, function (res, err) {
             if (err != null) {
                 //window.alert('encounter an error when try to create video');
                 popupErrorMsg('encounter an error when try to create video');
@@ -134,9 +182,16 @@ $(document).ready(function () {
             var obj = JSON.parse(res);
             var formData = new FormData();
             formData.append('file', $('#inputFile')[0].files[0]);
+            var url = '';
+            if(Number(is_see)){
+                url = 'http://' + window.location.hostname + ':' + port_web + '/upload1/' + obj['id'];
+            }else {
+                url = 'http://' + window.location.hostname + ':' + port_web + '/upload/' + obj['id'];
+
+            }
 
             $.ajax({
-                url: 'http://' + window.location.hostname + ':' + port_web + '/upload/' + obj['id'],
+                url: url,
                 //url:'http://127.0.0.1:8080/upload/dbibi',
                 type: 'POST',
                 data: formData,
@@ -188,7 +243,7 @@ function initPage(callback) {
     getUserId(function (res, err) {
         if (err != null) {
             //window.alert("Encountered error when loading user id");
-            popupErrorMsg('Encountered error when loading user id');
+            console.log("Encountered error when loading user id _初始化");
 
             return;
         }
@@ -203,10 +258,10 @@ function initPage(callback) {
                 return;
             }
             var obj = JSON.parse(res);
-            //console.log(obj);
             listedVideos = obj['videos'];
+
             obj['videos'].forEach(function (item, index) {
-                var ele = htmlVideoListElement(item['id'], item['name'], item['display_ctime']);
+                var ele = htmlVideoListElement(item['id'], item['name'], item['display_ctime'], item['is_see']);
                 $("#items").append(ele);
             });
             callback();
@@ -247,6 +302,17 @@ function selectVideo(vid) {
     refreshComments(vid);
 }
 
+
+function selectVideoQinui(vid) {
+    var url = 'http://' + window.location.hostname + ':' + port_web + '/videos1/' + vid
+    var video = $("#curr-video");
+    $("#curr-video:first-child").attr('src', url);
+    $("#curr-video-name").text(currentVideo['name']);
+    $("#curr-video-ctime").text('Uploaded at: ' + currentVideo['display_ctime']);
+    //currentVideoId = vid;
+    refreshComments(vid);
+}
+
 function refreshComments(vid) {
     listAllComments(vid, function (res, err) {
         if (err !== null) {
@@ -262,10 +328,15 @@ function refreshComments(vid) {
         } else {
             $("#comments-total").text(obj['comments'].length + ' Comments');
         }
-        obj['comments'].forEach(function (item, index) {
-            var ele = htmlCommentListElement(item['id'], item['author'], item['content']);
-            $("#comments-history").append(ele);
-        });
+        if(obj['comments'] === null){
+
+        }else{
+            obj['comments'].forEach(function (item, index) {
+                var ele = htmlCommentListElement(item['id'], item['author'], item['content']);
+                $("#comments-history").append(ele);
+            });
+        }
+
 
     });
 }
@@ -311,7 +382,7 @@ function htmlCommentListElement(cid, author, content) {
     return ele;
 }
 
-function htmlVideoListElement(vid, name, ctime) {
+function htmlVideoListElement(vid, name, ctime, is_see) {
     var ele = $('<a/>', {
         href: '#'
     });
@@ -338,6 +409,7 @@ function htmlVideoListElement(vid, name, ctime) {
 
     var res = $('<div/>', {
         id: vid,
+        is_see: is_see,
         class: 'video-item'
     }).append(ele);
 
@@ -483,10 +555,11 @@ function getUserId(callback) {
 }
 
 // Video operations
-function createVideo(vname, callback) {
+function createVideo(vname, is_see, callback) {
     var reqBody = {
         'author_id': uid,
-        'name': vname
+        'name': vname.toString(),
+        'is_see': Number(is_see)
     };
 
     var dat = {

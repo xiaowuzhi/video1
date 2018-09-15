@@ -83,20 +83,6 @@ $(document).ready(function () {
                 }
             });
 
-            deleteVideo(id, function (res, err) {
-                if (err !== null) {
-                    //window.alert("encounter an error when try to delete video: " + id);
-                    popupErrorMsg("encounter an error when try to delete video: " + id);
-                    return;
-                }
-
-                popupNotificationMsg("Successfully deleted video: " + id)
-                location.reload();
-            });
-
-
-
-
         });
 
         $("#submit-comment").on('click', function () {
